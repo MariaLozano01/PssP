@@ -41,7 +41,7 @@ df_fake_patients = df_fake_patients.drop_duplicates(subset=['mrn'])
 insertQuery = "INSERT INTO patients (mrn, first_name, last_name, zip_code, dob, gender, contact_mobile, contact_email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
 for index, row in df_fake_patients.iterrows():
-    engine.execute(insertQuery, (row['mrn'], row['first_name'], row['last_name'], row['dob'], row['gender'], row['zip_code'], row['contact_mobile'], row['contact_email']))
+    engine.execute(insertQuery, (row['mrn'], row['first_name'], row['last_name'], row['zip_code'], row['dob'], row['gender'], row['contact_mobile'], row['contact_email']))
     print("Inserting row: ", index)
 
 

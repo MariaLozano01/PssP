@@ -3,10 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 # load python-dotenv
 from dotenv import load_dotenv
 import os
+import pymysql
 
 load_dotenv()
 
-mysql_username = os.getenv("MYSQL_USERNAME")
+mysql_username = os.getenv("MYSQL_USER")
 mysql_password = os.getenv("MYSQL_PASSWORD")
 mysql_host = os.getenv("MYSQL_HOSTNAME")
 
@@ -17,23 +18,30 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://' + mysql_username + ':
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = '343fdksjf34#$#dfjkhdf0SDJH0df9fd98343fdfu34rf'
 
-db.init_app(app)
+db.init_app(app) ##if doesn't run, update terminal by python3 -m pip install --upgrade pip
 
 
 ### Models ###
 class Patients(db.Model):
-    __tablename__ = 'production_patients'
+    __tablename__ = 'patients'
 
     id = db.Column(db.Integer, primary_key=True)
     mrn = db.Column(db.String(255))
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
+    zip_code = db.Column(db.String(255))
+    dob = db.Column(db.String(255))
+    gender = db.Column(db.String(255))
 
     # this first function __init__ is to establish the class for python GUI
-    def __init__(self, mrn, first_name, last_name):
+    def __init__(self, mrn, first_name, last_name, zip_code,dob,gender):
         self.mrn = mrn
         self.first_name = first_name
         self.last_name = last_name
+        self.zip_code = zip_code 
+        self.dob = dob
+        self.gender = gender 
+
 
     # this second function is for the API endpoints to return JSON 
     def to_json(self):
@@ -41,7 +49,10 @@ class Patients(db.Model):
             'id': self.id,
             'mrn': self.mrn,
             'first_name': self.first_name,
-            'last_name': self.last_name
+            'last_name': self.last_name,
+            'zip_code': self.zip_code,
+            'dob': self.dob,
+            'gender': self.gender
         }
 
 class Conditions_patient(db.Model):
@@ -65,7 +76,7 @@ class Conditions_patient(db.Model):
         }
 
 class Conditions(db.Model):
-    __tablename__ = 'production_conditions'
+    __tablename__ = 'conditions'
 
     id = db.Column(db.Integer, primary_key=True)
     icd10_code = db.Column(db.String(255))
@@ -88,7 +99,7 @@ class Medications_patient(db.Model):
     __tablename__ = 'patient_medications'
 
     id = db.Column(db.Integer, primary_key=True)
-    mrn = db.Column(db.String(255), db.ForeignKey('ppatients.mrn'))
+    mrn = db.Column(db.String(255), db.ForeignKey('patients.mrn'))
     med_ndc = db.Column(db.String(255), db.ForeignKey('medications.med_ndc'))
 
     # this first function __init__ is to establish the class for python GUI
@@ -125,7 +136,6 @@ class Medications(db.Model):
         }
 
 
-
 #### BASIC ROUTES WITHOUT DATA PULSL FOR NOW ####
 @app.route('/')
 def index():
@@ -134,7 +144,6 @@ def index():
 @app.route('/signin')
 def signin():
     return render_template('signin.html')
-
 
 
 ##### CREATE BASIC GUI FOR CRUD #####
@@ -150,7 +159,10 @@ def insert(): # note this function needs to match name in html form action
         mrn = request.form['mrn']
         first_name = request.form['first_name']
         last_name = request.form['last_name']
-        my_data = Patients(mrn, first_name, last_name)
+        zip_code = request.form['zip_code']
+        dob = request.form['dob']
+        gender = request.form['gender']
+        my_data = Patients(mrn, first_name, last_name, zip_code, dob, gender)
         db.session.add(my_data)
         db.session.commit()
         flash("Patient Inserted Successfully")
@@ -167,6 +179,9 @@ def update(): # note this function needs to match name in html form action
         print('patient', patient)
         patient.first_name = request.form.get('first_name')
         patient.last_name = request.form.get('last_name')
+        patient.zip_code = request.form.get('zip_code')
+        patient.dob = request.form.get('dob')
+        patient.gender = request.form.get('gender')
         db.session.commit()
         flash("Patient Updated Successfully")
         return redirect(url_for('get_gui_patients'))
@@ -249,7 +264,10 @@ def create_patient():
     patient = Patients(
         mrn=request.json.get('mrn'),
         first_name=request.json.get('first_name'),
-        last_name=request.json.get('last_name')
+        last_name=request.json.get('last_name'),
+        zip_code=request.json.get('zip_code'),
+        dob= request.json.get('dob'),
+        gender= request.json.get('gender')
     )
     db.session.add(patient)
     db.session.commit()

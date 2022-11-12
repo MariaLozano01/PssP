@@ -13,7 +13,7 @@ mysql_username = os.getenv("MYSQL_USER")
 mysql_password = os.getenv("MYSQL_PASSWORD")
 mysql_database = os.getenv("MYSQL_DATABASE")
 
-connection_string = f'mysql+pymysql://{mysql_username}:{mysql_password}@{mysql_hostname}:3306/{mysql_database }'
+connection_string = f'mysql+pymysql://{mysql_username}:{mysql_password}@{mysql_hostname}:3306/{mysql_database}'
 engine = create_engine(connection_string)
 
 tableNames_gcp = engine.table_names()
@@ -30,7 +30,7 @@ zip_code varchar(255) default null,
 dob varchar(255) default null,
 gender varchar(255) default null,
 contact_mobile varchar(255) default null,
-contact_home varchar(255) default null,
+contact_email varchar(255) default null,
 PRIMARY KEY (id)); """
 
 
@@ -58,10 +58,21 @@ PRIMARY KEY (id),
 FOREIGN KEY (mrn) REFERENCES patients(mrn) ON DELETE CASCADE,
 FOREIGN KEY (med_ndc) REFERENCES medications(med_ndc) ON DELETE CASCADE); """
 
+
+table_prod_patient_conditions = """
+create table if not exists patient_conditions (
+    id int auto_increment,
+    mrn varchar(255) default null,
+    icd10_code varchar(255) default null,
+    PRIMARY KEY (id),
+    FOREIGN KEY (mrn) REFERENCES patients(mrn) ON DELETE CASCADE,
+    FOREIGN KEY (icd10_code) REFERENCES conditions(icd10_code) ON DELETE CASCADE); """
+
 engine.execute(table_prod_patients)
 engine.execute(table_prod_medications)
 engine.execute(table_prod_conditions)
 engine.execute(table_prod_patients_medications)
+engine.execute(table_prod_patient_conditions)
 
 gcp_tables = engine.table_names()
 
