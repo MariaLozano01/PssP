@@ -67,7 +67,6 @@ for index, row in ndc_codes_1k.iterrows():
 
 ########################## PATIENT MEDICATION TABLE #############################
 
-
 df_medications = pd.read_sql_query("SELECT med_ndc FROM medications", engine) 
 df_patients = pd.read_sql_query("SELECT mrn FROM patients", engine)
 
